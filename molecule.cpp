@@ -1,8 +1,19 @@
+///
+/// file: molecule.cpp
+/// Implementation for the Molecule class
+///
+/// @author Dominick Banasik
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "molecule.hpp"
+
+#ifndef _MOLECULE_IMPL_
+#define _MOLECULE_IMPL_
+
+/// Adds atoms to the molecule's atom count.
 
 void Molecule::addAtoms(char* current, int multiplier) {
     for (int i = 0; i < size; i++) {
@@ -19,6 +30,9 @@ void Molecule::addAtoms(char* current, int multiplier) {
     atoms[size] = atom;
     counts[size++] = multiplier;
 }
+
+/// Parses a string representation of the molecule
+/// and determines the atoms that make it up.
 
 void Molecule::parseAtoms(char* string) {
     int level = 0;
@@ -61,6 +75,8 @@ void Molecule::printAtoms() {
     }
 }
 
+/// Constructor for the Molecule class.
+
 Molecule::Molecule(char* string) {
     size = 0;
     atoms = (char**) malloc(0);
@@ -73,6 +89,6 @@ Molecule::Molecule(char* string) {
     multipliers[0] = coefficient;
     
     parseAtoms(string);
-
-    printAtoms();
 }
+
+#endif
