@@ -16,4 +16,5 @@ class Matrix {
         void setValue(char* atom, int col, int quantity);
         void reduce();
         void printMatrix();
+        int* solve();
 };

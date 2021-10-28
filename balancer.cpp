@@ -130,12 +130,13 @@ char** addAtoms(char** atoms, int* numAtoms, Molecule* molecules, int moleculeCo
     return atoms;
 }
 
-void fillMatrix(Matrix m, Molecule* molecules, char** atoms, int moleculeCount, int numAtoms, int offset) {
+void fillMatrix(Matrix m, Molecule* molecules, char** atoms, int moleculeCount, int numAtoms, int offset, bool pos) {
+    int mult = pos ? 1 : -1;
     for (int i = 0; i < moleculeCount; i++) {
         Molecule molecule = molecules[i];
         for (int j = 0; j < numAtoms; j++) {
             char* atom = atoms[j];
-            m.setValue(atom, i + offset, molecule.getCountOfAtom(atom));
+            m.setValue(atom, i + offset, mult * molecule.getCountOfAtom(atom));
         }
     }
 }
@@ -172,12 +173,13 @@ int main(int argc, char** argv) {
     atoms = addAtoms(atoms, &numAtoms, molecules[1], productCount);
 
     Matrix matrix(atoms, numAtoms, reactantCount + productCount + 1);
-    fillMatrix(matrix, molecules[0], atoms, reactantCount, numAtoms, 0);
-    fillMatrix(matrix, molecules[1], atoms, productCount, numAtoms, reactantCount);
+    fillMatrix(matrix, molecules[0], atoms, reactantCount, numAtoms, 0, true);
+    fillMatrix(matrix, molecules[1], atoms, productCount, numAtoms, reactantCount, false);
     fillLastColumn(matrix, atoms, numAtoms, reactantCount + productCount);
     matrix.printMatrix();
     matrix.reduce();
     matrix.printMatrix();
+    matrix.solve();
 
     return 0;
 }
