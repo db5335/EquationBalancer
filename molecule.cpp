@@ -64,9 +64,52 @@ void Molecule::parseAtoms(char* string) {
             if (!multiplier) multiplier = 1;
             multipliers = (int*) realloc(multipliers, (level + 2) * sizeof(int));
             multipliers[++level] = multipliers[level] * multiplier;
+        } else if (first == ')') {
+            level--;
         }
     }
     free(current);
+}
+
+void Molecule::setCoefficient(char* string) {
+    char* copy = string;
+    char next;
+    while (next = *copy++) {
+        if (next == '_') {
+            coefficient = 1;
+            fixed = false;
+            return;
+        } else if ('A' <= next && 'Z' >= next) {
+            coefficient = 1;
+            fixed = true;
+            return;
+        } else if ('0' <= next && '9' >= next) {
+            coefficient = strtol(string, &string, 10);       
+            fixed = true;
+            return;
+        }
+    }
+}
+
+int Molecule::getCountOfAtom(char* atom) {
+    for (int i = 0; i < size; i++) {
+        if (!strcmp(atom, atoms[i])) {
+            return counts[i];
+        }
+    }
+    return 0;
+}
+
+bool Molecule::getFixed() {
+    return fixed;
+}
+
+int Molecule::getSize() {
+    return size;
+}
+
+char** Molecule::getAtoms() {
+    return atoms;
 }
 
 void Molecule::printAtoms() {
@@ -81,9 +124,7 @@ Molecule::Molecule(char* string) {
     size = 0;
     atoms = (char**) malloc(0);
     counts = (int*) malloc(0);
-
-    coefficient = strtol(string, &string, 10);
-    if (!coefficient) coefficient = 1;
+    setCoefficient(string);
 
     multipliers = (int*) malloc(sizeof(int));
     multipliers[0] = coefficient;

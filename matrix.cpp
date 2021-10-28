@@ -58,9 +58,7 @@ void Matrix::reduce() {
 
     for (int i = rows - 1; i >= 0; i--) {
         for (int j = 0; j < cols; j++) {
-            printf("checking %d %d\n", i, j);
             if (!matrix[i][j].equals(0)) {
-                printf("Pivot at %d\n", j);
                 Fraction f1 = matrix[i][j];
                 Fraction reciprocal(f1.getDen(), f1.getNum());
                 multiplyRow(i, reciprocal);
@@ -112,7 +110,7 @@ void Matrix::printMatrix() {
     }
 }
 
-int main() {
+int main1() {
     char** atoms = (char**) malloc(3 * sizeof(char*));
     atoms[0] = (char*) malloc(5);
     sprintf(atoms[0], "Aa");
@@ -130,4 +128,5 @@ int main() {
     }
     m.reduce();
     m.printMatrix();
+    return 0;
 }

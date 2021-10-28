@@ -6,9 +6,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "molecule.hpp"
+#include "matrix.hpp"
 
 /// Prints a usage message.
 
@@ -28,7 +30,7 @@ void help() {
 /// @param argc the number of command line arguments
 /// @param argv the array of command line arguments
 
-void process_flags(int argc, char** argv) {
+void processFlags(int argc, char** argv) {
     int opt;
 
     while ((opt = getopt(argc, argv, "h")) != -1) {
@@ -52,13 +54,13 @@ void process_flags(int argc, char** argv) {
 /// @param index the index after the substring's end
 /// @return the updated array of molecules
 
-Molecule* add_molecule(Molecule* molecules, int count, char* string, int start, int index) {
-    char* molecule_string = (char*) malloc((index - start + 1) * sizeof(char));
+Molecule* addMolecule(Molecule* molecules, int count, char* string, int start, int index) {
+    char* moleculeStr = (char*) malloc((index - start + 1) * sizeof(char));
     for (int i = 0; i < index - 1; i++) {
-        molecule_string[i - start] = string[i];
+        moleculeStr[i - start] = string[i];
     }
     molecules = (Molecule*) realloc(molecules, count * sizeof(Molecule));
-    Molecule m(molecule_string);
+    Molecule m(moleculeStr);
     molecules[count - 1] = m;
     return molecules;
 }
@@ -80,26 +82,68 @@ Molecule** parse(char* string, int* reactantCount, int* productCount) {
     char next;
     while (next = *(string + index++)) {
         if (next == '+') {
-            reactants = add_molecule(reactants, ++(*reactantCount), string, start, index);
+            reactants = addMolecule(reactants, ++(*reactantCount), string, start, index);
             start = index;
         } else if (next == '=') {
-            reactants = add_molecule(reactants, ++(*reactantCount), string, start, index);
+            reactants = addMolecule(reactants, ++(*reactantCount), string, start, index);
             start = index;
             break;
         }
     }
     while (next = *(string + index++)) {
         if (next == '+') {
-            products = add_molecule(products, ++(*productCount), string, start, index);
+            products = addMolecule(products, ++(*productCount), string, start, index);
             start = index;
         }
     }
-    products = add_molecule(products, ++(*productCount), string, start, index);
+    products = addMolecule(products, ++(*productCount), string, start, index);
     
     molecules[0] = reactants;
     molecules[1] = products;
 
    return molecules;
+}
+
+char** addAtoms(char** atoms, int* numAtoms, Molecule* molecules, int moleculeCount) { 
+    for (int i = 0; i < moleculeCount; i++) {
+        printf("Molecule %d:\n", i);
+        Molecule molecule = molecules[i];
+        molecule.printAtoms();
+        int moleculeAtomCount = molecule.getSize();
+        char** moleculeAtoms = molecule.getAtoms();
+        for (int j = 0; j < moleculeAtomCount; j++) {
+            bool duplicate = false;
+            for (int k = 0; k < *numAtoms; k++) {
+                if (!strcmp(atoms[k], moleculeAtoms[j])) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                atoms = (char**) realloc(atoms, (*numAtoms + 1) * sizeof(char*));
+                atoms[*numAtoms] = (char*) malloc(3 * sizeof(char));
+                strcpy(atoms[*numAtoms], moleculeAtoms[j]);
+                *numAtoms += 1;
+            }
+        }
+    }
+    return atoms;
+}
+
+void fillMatrix(Matrix m, Molecule* molecules, char** atoms, int moleculeCount, int numAtoms, int offset) {
+    for (int i = 0; i < moleculeCount; i++) {
+        Molecule molecule = molecules[i];
+        for (int j = 0; j < numAtoms; j++) {
+            char* atom = atoms[j];
+            m.setValue(atom, i + offset, molecule.getCountOfAtom(atom));
+        }
+    }
+}
+
+void fillLastColumn(Matrix m, char** atoms, int numAtoms, int col) {
+    for (int i = 0; i < numAtoms; i++) {
+        m.setValue(atoms[i], col, 0);
+    }
 }
 
 /// The main function...
@@ -110,7 +154,7 @@ Molecule** parse(char* string, int* reactantCount, int* productCount) {
 
 int main(int argc, char** argv) {
     /// process command line flags
-    process_flags(argc, argv);
+    processFlags(argc, argv);
 
     /// get input
     printf("Enter an equation to balance:\n");
@@ -121,16 +165,19 @@ int main(int argc, char** argv) {
     int productCount = 0;
 
     Molecule** molecules = parse(string, &reactantCount, &productCount);
+    int numAtoms = 0;
+    char** atoms = (char**) malloc(0);
 
-    for (int i = 0; i < reactantCount; i++) {
-        printf("Reactant %d:\n\n", i);
-        molecules[0][i].printAtoms();
-    }
-    for (int i = 0; i < productCount; i++) {
-        printf("Product %d:\n\n", i);
-        molecules[1][i].printAtoms();
-    }
+    atoms = addAtoms(atoms, &numAtoms, molecules[0], reactantCount);
+    atoms = addAtoms(atoms, &numAtoms, molecules[1], productCount);
 
+    Matrix matrix(atoms, numAtoms, reactantCount + productCount + 1);
+    fillMatrix(matrix, molecules[0], atoms, reactantCount, numAtoms, 0);
+    fillMatrix(matrix, molecules[1], atoms, productCount, numAtoms, reactantCount);
+    fillLastColumn(matrix, atoms, numAtoms, reactantCount + productCount);
+    matrix.printMatrix();
+    matrix.reduce();
+    matrix.printMatrix();
 
     return 0;
 }
