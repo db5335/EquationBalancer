@@ -32,10 +32,23 @@ int Fraction::getDen() {
 }
 
 void Fraction::simplify() {
-    int g = gcd(numerator, denominator);
+    if (numerator == 0) {
+        denominator = 1;
+        return;
+    }
+    
+    int num = numerator > 0 ? numerator : -1 * numerator;
+    int den = denominator > 0 ? denominator : -1 * denominator;
+
+    int g = gcd(num, den);
     if (g > 1) {
         numerator /= g;
         denominator /= g;
+    }
+
+    if (denominator < 0) {
+        numerator *= -1;
+        denominator *= -1;
     }
 }
 
@@ -46,10 +59,17 @@ void Fraction::multiply(Fraction other) {
 }
 
 void Fraction::add(Fraction other) {
-    int lcd = lcm(denominator, other.denominator);
+    int den1 = denominator > 0 ? denominator : -1 * denominator;
+    int den2 = other.denominator > 0 ? other.denominator : -1 * other.denominator;
+    int lcd = lcm(den1, den2);
+    
     numerator = numerator * (lcd / denominator) + other.numerator * (lcd / other.denominator);
     denominator = lcd;
     simplify();
+}
+
+bool Fraction::equals(double d) {
+    return d == (double) numerator / (double) denominator;
 }
 
 Fraction::Fraction(const Fraction &copy) {

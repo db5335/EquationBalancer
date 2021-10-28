@@ -11,4 +11,5 @@ class Fraction {
         void multiply(Fraction other);
         void add(Fraction other);
         void simplify();
+        bool equals(double d);
 };
