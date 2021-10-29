@@ -104,6 +104,14 @@ Molecule** parse(char* string, int* reactantCount, int* productCount) {
    return molecules;
 }
 
+/// Adds atoms from a list of molecules to a collective list.
+///
+/// @param atoms the list of atoms
+/// @param numAtoms pointer to the number of total atoms
+/// @param molecules the list of molecules
+/// @param moleculeCount number of molecules
+/// @return the updated list of atoms
+
 char** addAtoms(char** atoms, int* numAtoms, Molecule* molecules, int moleculeCount) { 
     for (int i = 0; i < moleculeCount; i++) {
         Molecule molecule = molecules[i];
@@ -128,6 +136,17 @@ char** addAtoms(char** atoms, int* numAtoms, Molecule* molecules, int moleculeCo
     return atoms;
 }
 
+/// Fills a matrix with the entries that match the number of a
+/// particular atom in one molecule.
+///
+/// @param m the matrix to fill
+/// @param molecules the molecules to fill the matrix with
+/// @param atoms the list of atoms
+/// @param moleculeCount number of molecules
+/// @param numAtoms number of atoms
+/// @param offset the column to start filling the matrix from
+/// @param pos whether or not the entries will be positive
+
 void fillMatrix(Matrix m, Molecule* molecules, char** atoms, int moleculeCount, int numAtoms, int offset, bool pos) {
     int mult = pos ? 1 : -1;
     for (int i = 0; i < moleculeCount; i++) {
@@ -139,11 +158,23 @@ void fillMatrix(Matrix m, Molecule* molecules, char** atoms, int moleculeCount, 
     }
 }
 
+/// Fills the last column of a matrix with 0's.
+///
+/// @param m the matrix to fill
+/// @param atoms the list of atoms
+/// @param numAtoms number of atoms
+/// @oaram col the column of the matrix to fill
+
 void fillLastColumn(Matrix m, char** atoms, int numAtoms, int col) {
     for (int i = 0; i < numAtoms; i++) {
         m.setValue(atoms[i], col, 0);
     }
 }
+
+/// Prints the solution to the balanced equation.
+///
+/// @param solution the list of integer coefficients
+/// @param size the number of coefficients
 
 void printSolution(int* solution, int size) {
     for (int i = 0; i < size; i++) {
@@ -170,18 +201,22 @@ int main(int argc, char** argv) {
     int reactantCount = 0;
     int productCount = 0;
 
+    /// create molecules from input
     Molecule** molecules = parse(string, &reactantCount, &productCount);
     int numAtoms = 0;
     char** atoms = (char**) malloc(0);
 
+    /// generate a complete list of atoms
     atoms = addAtoms(atoms, &numAtoms, molecules[0], reactantCount);
     atoms = addAtoms(atoms, &numAtoms, molecules[1], productCount);
 
+    /// initialize a matrix
     Matrix matrix(atoms, numAtoms, reactantCount + productCount + 1);
     fillMatrix(matrix, molecules[0], atoms, reactantCount, numAtoms, 0, true);
     fillMatrix(matrix, molecules[1], atoms, productCount, numAtoms, reactantCount, false);
     fillLastColumn(matrix, atoms, numAtoms, reactantCount + productCount);
     
+    /// balance the equation
     matrix.reduce();
     int* solution = matrix.solve();
     printSolution(solution, reactantCount + productCount);

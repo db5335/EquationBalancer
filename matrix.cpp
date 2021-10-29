@@ -1,9 +1,19 @@
+///
+/// file: matrix.cpp
+/// Implementation for the Matrix class
+///
+/// @author Dominick Banasik
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "matrix.hpp"
+
+#ifndef _MATRIX_IMPL_
+#define _MATRIX_IMPL_
+
+/// Swaps two rows in the matrix.
 
 void Matrix::swapRows(int row1, int row2) {
     if (row1 == row2) return;
@@ -19,11 +29,15 @@ void Matrix::swapRows(int row1, int row2) {
     }
 }
 
+/// Multiplies a row by a scalar.
+
 void Matrix::multiplyRow(int row, Fraction scalar) {
     for (int i = 0; i < cols; i++) {
         matrix[row][i].multiply(scalar);
     }
 }
+
+/// Adds a multiple of one row to another.
 
 void Matrix::addRow(int row1, int row2, Fraction scalar) {
     for (int i = 0; i < cols; i++) {
@@ -32,6 +46,8 @@ void Matrix::addRow(int row1, int row2, Fraction scalar) {
         matrix[row1][i].add(f);
     }
 }
+
+/// Row reduces the matrix to rref.
 
 void Matrix::reduce() {
     int pivots = 0;
@@ -68,6 +84,8 @@ void Matrix::reduce() {
         }
     }
 }
+
+/// Returns the simplest non-zero solution to the matrix.
 
 int* Matrix::solve() {
     int* solution = (int*) malloc((cols - 1) * sizeof(int));
@@ -129,6 +147,8 @@ int* Matrix::solve() {
     return solution;
 }
 
+/// Sets the value of an entry in the matrix.
+
 void Matrix::setValue(char* atom, int col, int quantity) {
     for (int i = 0; i < rows; i++) {
         if (!strcmp(atoms[i], atom)) {
@@ -139,9 +159,13 @@ void Matrix::setValue(char* atom, int col, int quantity) {
     }
 }
 
+/// Returns the value of an entry in the matrix.
+
 Fraction Matrix::getValue(int row, int col) {
     return matrix[row][col];
 }
+
+/// Constructor for the Matrix class.
 
 Matrix::Matrix(char** atoms, int rows, int cols) {
     this->rows = rows;
@@ -153,3 +177,4 @@ Matrix::Matrix(char** atoms, int rows, int cols) {
     }
 }
 
+#endif

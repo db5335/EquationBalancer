@@ -71,6 +71,9 @@ void Molecule::parseAtoms(char* string) {
     free(current);
 }
 
+/// Set the coefficient of the entire molecule if
+/// one is provided.
+
 void Molecule::setCoefficient(char* string) {
     char* copy = string;
     char next;
@@ -91,6 +94,8 @@ void Molecule::setCoefficient(char* string) {
     }
 }
 
+/// Returns the quantity of a particular atom present in the molecule.
+
 int Molecule::getCountOfAtom(char* atom) {
     for (int i = 0; i < size; i++) {
         if (!strcmp(atom, atoms[i])) {
@@ -100,13 +105,19 @@ int Molecule::getCountOfAtom(char* atom) {
     return 0;
 }
 
+/// Checks whether a coefficient was fixed or not.
+
 bool Molecule::getFixed() {
     return fixed;
 }
 
+/// Returns the number of different atoms in the molecule.
+
 int Molecule::getSize() {
     return size;
 }
+
+/// Returns the array of atoms that make up the molecule.
 
 char** Molecule::getAtoms() {
     return atoms;

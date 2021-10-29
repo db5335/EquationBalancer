@@ -1,7 +1,21 @@
+///
+/// file: fraction.cpp
+/// Implementation for the Fraction class
+///
+/// @author Dominick Banasik
 
 #include <stdio.h>
 
 #include "fraction.hpp"
+
+#ifndef _FRACTION_IMPL_
+#define _FRACTION_IMPL_
+
+/// Computes the great common divisor of two numbers.
+///
+/// @param m the first number
+/// @param n the second number
+/// @return the greatest common divisor
 
 int gcd(int m, int n) {
     int i = 1;
@@ -13,6 +27,12 @@ int gcd(int m, int n) {
     return g;
 }
 
+/// Computes the least common multiple of two numbers.
+///
+/// @param m the first number
+/// @param n the second number
+/// @return the least common multiple
+
 int lcm(int m, int n) {
     int l = m > n ? m : n;
     while (true) {
@@ -23,13 +43,19 @@ int lcm(int m, int n) {
     }
 }
 
+/// Returns the numerator of the fraction.
+
 int Fraction::getNum() {
     return numerator;
 }
 
+/// Returns the denominator of the fraction.
+
 int Fraction::getDen() {
     return denominator;
 }
+
+/// Simplifies the fraction.
 
 void Fraction::simplify() {
     if (numerator == 0) {
@@ -52,11 +78,15 @@ void Fraction::simplify() {
     }
 }
 
+/// Multiplies the fraction by another.
+
 void Fraction::multiply(Fraction other) {
     numerator = numerator * other.numerator;
     denominator = denominator * other.denominator;
     simplify();
 }
+
+/// Adds another fraction.
 
 void Fraction::add(Fraction other) {
     int den1 = denominator > 0 ? denominator : -1 * denominator;
@@ -68,14 +98,20 @@ void Fraction::add(Fraction other) {
     simplify();
 }
 
+/// Checks whether the fraction equals a decimal value.
+
 bool Fraction::equals(double d) {
     return d == (double) numerator / (double) denominator;
 }
+
+/// Copy constructor for the Fraction class.
 
 Fraction::Fraction(const Fraction &copy) {
     numerator = copy.numerator;
     denominator = copy.denominator;
 }
+
+/// Constructor for the Fraction class.
 
 Fraction::Fraction(int num, int den) {
     numerator = num;
@@ -83,3 +119,4 @@ Fraction::Fraction(int num, int den) {
     simplify();
 }
 
+#endif

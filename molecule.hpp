@@ -19,7 +19,10 @@ class Molecule {
         int size;
         bool fixed;
         
+        /// Sets the coefficient of the entire molecule if
+        /// one is provided.
         ///
+        /// @param string the input string
 
         void setCoefficient(char* string);
 
@@ -38,7 +41,9 @@ class Molecule {
         void addAtoms(char* string, int multiplier);
 
     public:
+        /// Checks whether a coefficient was fixed or not.
         ///
+        /// @return whether or not an explicit coefficient was provided.
 
         bool getFixed();
 
@@ -61,6 +66,10 @@ class Molecule {
         /// @return the quantity of that atom
 
         int getCountOfAtom(char* atom);
+
+        /// Returns the number of different atoms in the molecule.
+        ///
+        /// @return the size of the atom list
 
         int getSize();
 };
