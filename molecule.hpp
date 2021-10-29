@@ -63,8 +63,6 @@ class Molecule {
         int getCountOfAtom(char* atom);
 
         int getSize();
-
-        void printAtoms();
 };
 
 #endif

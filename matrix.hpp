@@ -15,6 +15,5 @@ class Matrix {
         Fraction getValue(int row, int col);
         void setValue(char* atom, int col, int quantity);
         void reduce();
-        void printMatrix();
         int* solve();
 };

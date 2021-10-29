@@ -8,7 +8,6 @@
 void Matrix::swapRows(int row1, int row2) {
     if (row1 == row2) return;
 
-    printf("R%d <-> Ra%d\n", row1, row2);
     char* tmp = atoms[row1];
     atoms[row1] = atoms[row2];
     atoms[row2] = tmp;
@@ -21,14 +20,12 @@ void Matrix::swapRows(int row1, int row2) {
 }
 
 void Matrix::multiplyRow(int row, Fraction scalar) {
-    printf("(%d/%d) R%d\n", scalar.getNum(), scalar.getDen(), row);
     for (int i = 0; i < cols; i++) {
         matrix[row][i].multiply(scalar);
     }
 }
 
 void Matrix::addRow(int row1, int row2, Fraction scalar) {
-    printf("R%d + (%d/%d) R%d\n", row1, scalar.getNum(), scalar.getDen(), row2);
     for (int i = 0; i < cols; i++) {
         Fraction f(matrix[row2][i]);
         f.multiply(scalar);
@@ -50,7 +47,6 @@ void Matrix::reduce() {
                     addRow(k, pivots, f2);
                 }
                 pivots++;
-                printMatrix();
                 break;
             }
         }
@@ -62,13 +58,11 @@ void Matrix::reduce() {
                 Fraction f1 = matrix[i][j];
                 Fraction reciprocal(f1.getDen(), f1.getNum());
                 multiplyRow(i, reciprocal);
-                printMatrix();
                 for (int k = i - 1; k >= 0; k--) {
                     Fraction f2(matrix[k][j]);
                     f2.multiply(Fraction(-1, 1));
                     addRow(k, i, f2);
                 }
-                printMatrix();
                 break;
             }
         }
@@ -85,6 +79,12 @@ int* Matrix::solve() {
         Fraction total(matrix[i][cols - 1]);
         for (int j = cols - 2; j >= 0; j--) {
             bool pivot = true;
+            if (solution[j] >= 0) {
+                Fraction f(matrix[i][j]);
+                f.multiply(Fraction(solution[j], 1));
+                total.add(f);
+                continue;
+            }
             for (int k = j - 1; k >= 0; k--) {
                 if (!matrix[i][k].equals(0)) {
                     pivot = false;
@@ -92,38 +92,26 @@ int* Matrix::solve() {
                 }
             }
             if (!pivot) {
-                printf("No pivot in %d\n", j);
-                if (solution[j] >= 0) {
-                    Fraction f(matrix[i][j]);
-                    f.multiply(Fraction(solution[j], 1));
-                    total.add(f);
+                Fraction f(matrix[i][j]);
+                if (total.equals(0)) {
+                    solution[j] = f.getDen();
+                    total.add(Fraction(f.getNum(), 1));
                 } else {
-                    Fraction f(matrix[i][j]);
-                    if (total.equals(0)) {
-                        printf("soln[%d] = %d\n", j, f.getDen());
-                        solution[j] = f.getDen();
-                        total.add(Fraction(f.getNum(), 1));
-                    } else {
-                        total.multiply(Fraction(f.getDen(), f.getNum()));
-                        printf("soln[%d] = %d\n", j, total.getNum());
-                        solution[j] = total.getNum();
-                        int den = total.getDen();
-                        if (den != 1) {
-                            for (int k = j + 1; k < cols - 1; k++) {
-                                solution[k] *= den;
-                            }
+                    total.multiply(Fraction(f.getDen(), f.getNum()));
+                    solution[j] = total.getNum();
+                    int den = total.getDen();
+                    if (den != 1) {
+                        for (int k = j + 1; k < cols - 1; k++) {
+                            solution[k] *= den;
                         }
-                    } 
-                }
+                    }
+                } 
             } else {
                 Fraction f(matrix[i][j]);
-                printf("%s: x(%d / %d) = (%d /%d)\n", atoms[i], f.getNum(), f.getDen(), total.getNum(), total.getDen());
                 if (total.equals(0)) {
-                    printf("soln[%d] = %d\n", j, f.getDen());
-                    solution[j] = f.getDen();
+                    solution[j] = 0;
                 } else {
                     total.multiply(Fraction(-1 * f.getDen(), f.getNum()));
-                    printf("soln[%d] = %d\n", j, total.getNum());
                     solution[j] = total.getNum();
                     int den = total.getDen();
                     if (den != 1) {
@@ -137,11 +125,6 @@ int* Matrix::solve() {
             }
         }
     }
-
-    for (int i = 0; i < cols - 1; i++) {
-        printf("%d\t", solution[i]);
-    }
-    printf("\n");
 
     return solution;
 }
@@ -170,34 +153,3 @@ Matrix::Matrix(char** atoms, int rows, int cols) {
     }
 }
 
-void Matrix::printMatrix() {
-    printf("-----------------------------\n");
-    for (int i = 0; i < rows; i++) {
-        printf("%s\t", atoms[i]);
-        for (int j = 0; j < cols; j++) {
-            printf("%d/%d\t", matrix[i][j].getNum(),  matrix[i][j].getDen());
-        }
-        printf("\n");
-    }
-}
-
-int main1() {
-    char** atoms = (char**) malloc(3 * sizeof(char*));
-    atoms[0] = (char*) malloc(5);
-    sprintf(atoms[0], "Aa");
-    atoms[1] = (char*) malloc(5);
-    sprintf(atoms[1], "B");
-    atoms[2] = (char*) malloc(5);
-    sprintf(atoms[2], "Cc");
-
-    Matrix m(atoms, 3, 4);
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            m.setValue(atoms[i], j, i + j + 3);
-        }
-        m.setValue(atoms[i], 3, 0);
-    }
-    m.reduce();
-    m.printMatrix();
-    return 0;
-}

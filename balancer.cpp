@@ -106,9 +106,7 @@ Molecule** parse(char* string, int* reactantCount, int* productCount) {
 
 char** addAtoms(char** atoms, int* numAtoms, Molecule* molecules, int moleculeCount) { 
     for (int i = 0; i < moleculeCount; i++) {
-        printf("Molecule %d:\n", i);
         Molecule molecule = molecules[i];
-        molecule.printAtoms();
         int moleculeAtomCount = molecule.getSize();
         char** moleculeAtoms = molecule.getAtoms();
         for (int j = 0; j < moleculeAtomCount; j++) {
@@ -147,6 +145,13 @@ void fillLastColumn(Matrix m, char** atoms, int numAtoms, int col) {
     }
 }
 
+void printSolution(int* solution, int size) {
+    for (int i = 0; i < size; i++) {
+        printf("%d\t", solution[i]);
+    }
+    printf("\n");
+}
+
 /// The main function...
 ///
 /// @param argc the number of command line arguments
@@ -176,10 +181,10 @@ int main(int argc, char** argv) {
     fillMatrix(matrix, molecules[0], atoms, reactantCount, numAtoms, 0, true);
     fillMatrix(matrix, molecules[1], atoms, productCount, numAtoms, reactantCount, false);
     fillLastColumn(matrix, atoms, numAtoms, reactantCount + productCount);
-    matrix.printMatrix();
+    
     matrix.reduce();
-    matrix.printMatrix();
-    matrix.solve();
+    int* solution = matrix.solve();
+    printSolution(solution, reactantCount + productCount);
 
     return 0;
 }

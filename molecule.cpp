@@ -112,12 +112,6 @@ char** Molecule::getAtoms() {
     return atoms;
 }
 
-void Molecule::printAtoms() {
-    for (int i = 0; i < size; i++) {
-        printf("%s: %d\n", atoms[i], counts[i]);
-    }
-}
-
 /// Constructor for the Molecule class.
 
 Molecule::Molecule(char* string) {
