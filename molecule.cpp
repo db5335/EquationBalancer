@@ -77,18 +77,16 @@ void Molecule::parseAtoms(char* string) {
 void Molecule::setCoefficient(char* string) {
     char* copy = string;
     char next;
+    fixed = true;
+    
     while (next = *copy++) {
         if (next == '_') {
-            coefficient = 1;
             fixed = false;
-            return;
         } else if ('A' <= next && 'Z' >= next) {
             coefficient = 1;
-            fixed = true;
             return;
         } else if ('0' <= next && '9' >= next) {
-            coefficient = strtol(string, &string, 10);       
-            fixed = true;
+            coefficient = strtol(copy - 1, &string, 10);       
             return;
         }
     }

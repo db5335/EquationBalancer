@@ -76,6 +76,8 @@ class Matrix {
         /// @return the solution for the matrix
 
         int* solve();
+
+        void printMatrix();
 };
 
 #endif

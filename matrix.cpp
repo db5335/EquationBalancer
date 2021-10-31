@@ -127,7 +127,10 @@ int* Matrix::solve() {
             } else {
                 Fraction f(matrix[i][j]);
                 if (total.equals(0)) {
+                    if (f.equals(0)) break;
                     solution[j] = 0;
+                } else if (f.equals(0)) {
+                    return NULL;
                 } else {
                     total.multiply(Fraction(-1 * f.getDen(), f.getNum()));
                     solution[j] = total.getNum();
@@ -156,6 +159,17 @@ void Matrix::setValue(char* atom, int col, int quantity) {
             matrix[i][col] = f;
             return;
         }
+    }
+}
+
+void Matrix::printMatrix() {
+    printf("==========MATRIX==========\n");
+    for (int i = 0; i < rows; i++) {
+        printf("%s:\t", atoms[i]);
+        for (int j = 0; j < cols; j++) {
+            printf("%d/%d\t", matrix[i][j].getNum(), matrix[i][j].getDen());
+        }
+        printf("\n");
     }
 }
 

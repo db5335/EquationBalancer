@@ -62,7 +62,9 @@ Molecule* addMolecule(Molecule* molecules, int count, char* string, int start, i
     }
     molecules = (Molecule*) realloc(molecules, count * sizeof(Molecule));
     Molecule m(moleculeStr);
-    if (!m.getFixed()) *freeCount++;
+    if (!m.getFixed()) {
+        (*freeCount)++;
+    }
     molecules[count - 1] = m;
     return molecules;
 }
@@ -190,25 +192,51 @@ char** addAtoms(char** atoms, int* numAtoms, Molecule* molecules, int moleculeCo
 
 void fillMatrix(Matrix m, Molecule* molecules, char** atoms, int moleculeCount, int numAtoms, int offset, bool pos) {
     int mult = pos ? 1 : -1;
+    int index = offset;
     for (int i = 0; i < moleculeCount; i++) {
         Molecule molecule = molecules[i];
-        for (int j = 0; j < numAtoms; j++) {
-            char* atom = atoms[j];
-            m.setValue(atom, i + offset, mult * molecule.getCountOfAtom(atom));
+        if (!molecule.getFixed()) {
+            for (int j = 0; j < numAtoms; j++) {
+                char* atom = atoms[j];
+                m.setValue(atom, index, mult * molecule.getCountOfAtom(atom));
+            }
+            index++;
         }
     }
 }
 
 /// Fills the last column of a matrix with 0's.
-///
+/// TODO
 /// @param m the matrix to fill
 /// @param atoms the list of atoms
 /// @param numAtoms number of atoms
 /// @oaram col the column of the matrix to fill
 
-void fillLastColumn(Matrix m, char** atoms, int numAtoms, int col) {
+void fillLastColumn(Matrix m, Molecule** molecules, char** atoms, int reactantCount, int productCount, int numAtoms, int col) {
     for (int i = 0; i < numAtoms; i++) {
         m.setValue(atoms[i], col, 0);
+    }
+
+    for (int i = 0; i < reactantCount; i++) {
+        Molecule molecule = molecules[0][i];
+        if (molecule.getFixed()) {
+            for (int j = 0; j < numAtoms; j++) {
+                char* atom = atoms[j];
+                Fraction f = m.getValue(j, col);
+                m.setValue(atom, col, molecule.getCountOfAtom(atom) + f.getNum());
+            }
+        }
+    }
+
+    for (int i = 0; i < productCount; i++) {
+        Molecule molecule = molecules[1][i];
+        if (molecule.getFixed()) {
+            for (int j = 0; j < numAtoms; j++) {
+                char* atom = atoms[j];
+                Fraction f = m.getValue(j, col);
+                m.setValue(atom, col, -1 * molecule.getCountOfAtom(atom) + f.getNum());
+            }
+        }
     }
 }
 
@@ -218,6 +246,10 @@ void fillLastColumn(Matrix m, char** atoms, int numAtoms, int col) {
 /// @param size the number of coefficients
 
 void printSolution(int* solution, int size) {
+    if (solution == NULL) {
+        printf("No solution\n");
+        return;
+    }
     for (int i = 0; i < size; i++) {
         printf("%d\t", solution[i]);
     }
@@ -254,15 +286,15 @@ int main(int argc, char** argv) {
     atoms = addAtoms(atoms, &numAtoms, molecules[1], productCount);
 
     /// initialize a matrix
-    Matrix matrix(atoms, numAtoms, reactantCount + productCount + 1);
+    Matrix matrix(atoms, numAtoms, freeReactantCount + freeProductCount + 1);
     fillMatrix(matrix, molecules[0], atoms, reactantCount, numAtoms, 0, true);
-    fillMatrix(matrix, molecules[1], atoms, productCount, numAtoms, reactantCount, false);
-    fillLastColumn(matrix, atoms, numAtoms, reactantCount + productCount);
-    
+    fillMatrix(matrix, molecules[1], atoms, productCount, numAtoms, freeReactantCount, false);
+    fillLastColumn(matrix, molecules, atoms, reactantCount, productCount, numAtoms, freeReactantCount + freeProductCount);
+
     /// balance the equation
     matrix.reduce();
     int* solution = matrix.solve();
-    printSolution(solution, reactantCount + productCount);
+    printSolution(solution, freeReactantCount + freeProductCount);
 
     return 0;
 }
