@@ -52,15 +52,17 @@ void processFlags(int argc, char** argv) {
 /// @param string the string from input
 /// @param start the start of the molecule's substring
 /// @param index the index after the substring's end
+/// @param freeCount pointer to the number of molecules in the arrya without a fixed quantity
 /// @return the updated array of molecules
 
-Molecule* addMolecule(Molecule* molecules, int count, char* string, int start, int index) {
+Molecule* addMolecule(Molecule* molecules, int count, char* string, int start, int index, int* freeCount) {
     char* moleculeStr = (char*) malloc((index - start + 1) * sizeof(char));
     for (int i = 0; i < index - 1; i++) {
         moleculeStr[i - start] = string[i];
     }
     molecules = (Molecule*) realloc(molecules, count * sizeof(Molecule));
     Molecule m(moleculeStr);
+    if (!m.getFixed()) *freeCount++;
     molecules[count - 1] = m;
     return molecules;
 }
@@ -70,33 +72,72 @@ Molecule* addMolecule(Molecule* molecules, int count, char* string, int start, i
 /// @param string the string from input
 /// @param reactantCount pointer to the number of reactants
 /// @param productCount pointer to the number of products
+/// @param freeReactantCount pointer to the number of reactants without a fixed quantity
+/// @param freeProductCount pointer to the number of products without a fixed quantity
 /// @return the array of reactants and the array of products
 
-Molecule** parse(char* string, int* reactantCount, int* productCount) {
+Molecule** parse(char* string, int* reactantCount, int* productCount, int* freeReactantCount, int* freeProductCount) {
     Molecule** molecules = (Molecule**) malloc(2 * sizeof(Molecule*));
     Molecule* reactants = (Molecule*) malloc(0);
     Molecule* products = (Molecule*) malloc(0);
 
     int start = 0;
     int index = 0;
+    bool flip = false;
     char next;
     while (next = *(string + index++)) {
         if (next == '+') {
-            reactants = addMolecule(reactants, ++(*reactantCount), string, start, index);
+            if (!flip) {
+                reactants = addMolecule(reactants, ++(*reactantCount), string, start, index, freeReactantCount);
+            } else {
+                products = addMolecule(products, ++(*productCount), string, start, index, freeProductCount);
+                flip = false;
+            }
+            start = index;
+        } else if (next == '-') {
+            if (!flip) {
+                reactants = addMolecule(reactants, ++(*reactantCount), string, start, index, freeReactantCount);
+                flip = true;
+            } else {
+                products = addMolecule(products, ++(*productCount), string, start, index, freeProductCount);
+            }
             start = index;
         } else if (next == '=') {
-            reactants = addMolecule(reactants, ++(*reactantCount), string, start, index);
+            if (!flip) {
+                reactants = addMolecule(reactants, ++(*reactantCount), string, start, index, freeReactantCount);
+            } else {
+                products = addMolecule(products, ++(*productCount), string, start, index, freeProductCount);
+                flip = false;
+            }
             start = index;
             break;
         }
     }
     while (next = *(string + index++)) {
         if (next == '+') {
-            products = addMolecule(products, ++(*productCount), string, start, index);
+            if (!flip) {
+                products = addMolecule(products, ++(*productCount), string, start, index, freeProductCount);
+            } else {
+                reactants = addMolecule(reactants, ++(*reactantCount), string, start, index, freeReactantCount);
+                flip = false;
+            }
+            start = index;
+        } else if (next == '-') {
+            if (!flip) {
+                products = addMolecule(products, ++(*productCount), string, start, index, freeProductCount);
+                flip = true;
+            } else {
+                reactants = addMolecule(reactants, ++(*reactantCount), string, start, index, freeReactantCount);
+            }
             start = index;
         }
     }
-    products = addMolecule(products, ++(*productCount), string, start, index);
+    
+    if (!flip) {
+            products = addMolecule(products, ++(*productCount), string, start, index, freeProductCount);
+    } else {
+        reactants = addMolecule(reactants, ++(*reactantCount), string, start, index, freeReactantCount);
+    }
     
     molecules[0] = reactants;
     molecules[1] = products;
@@ -200,9 +241,11 @@ int main(int argc, char** argv) {
  
     int reactantCount = 0;
     int productCount = 0;
+    int freeReactantCount = 0;
+    int freeProductCount = 0;
 
     /// create molecules from input
-    Molecule** molecules = parse(string, &reactantCount, &productCount);
+    Molecule** molecules = parse(string, &reactantCount, &productCount, &freeReactantCount, &freeProductCount);
     int numAtoms = 0;
     char** atoms = (char**) malloc(0);
 
