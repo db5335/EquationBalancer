@@ -87,19 +87,21 @@ void Matrix::reduce() {
 
 /// Returns the simplest non-zero solution to the matrix.
 
-int* Matrix::solve() {
-    int* solution = (int*) malloc((cols - 1) * sizeof(int));
+Fraction* Matrix::solve() {
+    Fraction* solution = (Fraction*) malloc((cols - 1) * sizeof(int));
+    bool fixed = false;
     for (int i = 0; i < cols - 1; i++) {
-        solution[i] = -1;
+        solution[i] = Fraction(-1, 1);
     }
 
     for (int i = rows - 1; i >= 0; i--) {
         Fraction total(matrix[i][cols - 1]);
+        fixed = !total.equals(0);
         for (int j = cols - 2; j >= 0; j--) {
             bool pivot = true;
-            if (solution[j] >= 0) {
+            if (solution[j].getNum() >= 0) {
                 Fraction f(matrix[i][j]);
-                f.multiply(Fraction(solution[j], 1));
+                f.multiply(solution[j]);
                 total.add(f);
                 continue;
             }
@@ -112,15 +114,17 @@ int* Matrix::solve() {
             if (!pivot) {
                 Fraction f(matrix[i][j]);
                 if (total.equals(0)) {
-                    solution[j] = f.getDen();
+                    solution[j] = Fraction(f.getDen(), 1);
                     total.add(Fraction(f.getNum(), 1));
                 } else {
                     total.multiply(Fraction(f.getDen(), f.getNum()));
-                    solution[j] = total.getNum();
-                    int den = total.getDen();
-                    if (den != 1) {
-                        for (int k = j + 1; k < cols - 1; k++) {
-                            solution[k] *= den;
+                    solution[j] = Fraction(total);
+                    if (!fixed) {
+                        int den = total.getDen();
+                        if (den != 1) {
+                            for (int k = j; k < cols - 1; k++) {
+                                solution[k].multiply(Fraction(den, 1));
+                            }
                         }
                     }
                 } 
@@ -128,16 +132,18 @@ int* Matrix::solve() {
                 Fraction f(matrix[i][j]);
                 if (total.equals(0)) {
                     if (f.equals(0)) break;
-                    solution[j] = 0;
+                    solution[j] = Fraction(0, 1);
                 } else if (f.equals(0)) {
                     return NULL;
                 } else {
                     total.multiply(Fraction(-1 * f.getDen(), f.getNum()));
-                    solution[j] = total.getNum();
-                    int den = total.getDen();
-                    if (den != 1) {
-                        for (int k = j + 1; k < cols - 1; k++) {
-                            solution[k] *= den;
+                    solution[j] = Fraction(total);
+                    if (!fixed) {
+                        int den = total.getDen();
+                        if (den != 1) {
+                            for (int k = j; k < cols - 1; k++) {
+                                solution[k].multiply(Fraction(den, 1));
+                            }
                         }
                     }
                 }

@@ -245,13 +245,19 @@ void fillLastColumn(Matrix m, Molecule** molecules, char** atoms, int reactantCo
 /// @param solution the list of integer coefficients
 /// @param size the number of coefficients
 
-void printSolution(int* solution, int size) {
+void printSolution(Fraction* solution, int size) {
     if (solution == NULL) {
         printf("No solution\n");
         return;
     }
     for (int i = 0; i < size; i++) {
-        printf("%d\t", solution[i]);
+        int num = solution[i].getNum();
+        int den = solution[i].getDen();
+        if (num % den == 0) {
+            printf("%d\t", num / den);
+        } else {
+            printf("%d/%d\t", num, den);
+        }
     }
     printf("\n");
 }
@@ -292,8 +298,10 @@ int main(int argc, char** argv) {
     fillLastColumn(matrix, molecules, atoms, reactantCount, productCount, numAtoms, freeReactantCount + freeProductCount);
 
     /// balance the equation
+    matrix.printMatrix();
     matrix.reduce();
-    int* solution = matrix.solve();
+    matrix.printMatrix();
+    Fraction* solution = matrix.solve();
     printSolution(solution, freeReactantCount + freeProductCount);
 
     return 0;

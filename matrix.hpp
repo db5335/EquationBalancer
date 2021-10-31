@@ -75,7 +75,7 @@ class Matrix {
         ///
         /// @return the solution for the matrix
 
-        int* solve();
+        Fraction* solve();
 
         void printMatrix();
 };
