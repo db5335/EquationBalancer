@@ -20,10 +20,12 @@
 int gcd(int m, int n) {
     int i = 1;
     int g = 1;
+    
     while (i <= m && i <= n) {
         if (m % i == 0 && n % i == 0) g = i;
         i++;
     }
+
     return g;
 }
 
