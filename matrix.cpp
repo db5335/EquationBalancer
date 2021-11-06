@@ -50,6 +50,8 @@ void Matrix::addRow(int row1, int row2, Fraction scalar) {
 /// Row reduces the matrix to rref.
 
 void Matrix::reduce() {
+    printMatrix();
+
     int pivots = 0;
     for (int i = 0; i < cols; i++) {
         for (int j = pivots; j < rows; j++) {
@@ -85,74 +87,104 @@ void Matrix::reduce() {
     }
 }
 
-/// Returns the simplest non-zero solution to the matrix.
+/// Returns the simplest non-zero solution to the matrix
 
-Fraction* Matrix::solve() {
-    Fraction* solution = (Fraction*) malloc((cols - 1) * sizeof(int));
+Solution Matrix::solve() {
+    Solution solution(cols - 1);
     bool fixed = false;
-    for (int i = 0; i < cols - 1; i++) {
-        solution[i] = Fraction(-1, 1);
+    
+    if (cols == 1) {
+        for (int i = 0; i < rows; i++) {
+            if (!matrix[i][0].equals(0)) {
+                solution.setStatus(UNBALANCED);
+                return solution;
+            }
+        }
+        solution.setStatus(BALANCED);
+        return solution;
     }
+
+    printMatrix();
 
     for (int i = rows - 1; i >= 0; i--) {
         Fraction total(matrix[i][cols - 1]);
-        fixed = !total.equals(0);
+        if (!fixed) fixed = !total.equals(0);
+        fixed ? printf("Equation is fixed\n") : printf("Equation NOT fixed\n");
+        printf("\nWorking on row %d\n", i + 1);
         for (int j = cols - 2; j >= 0; j--) {
-            bool pivot = true;
-            if (solution[j].getNum() >= 0) {
+            Fraction current = solution.getValue(j);
+            if (current.getNum() >= 0) {
                 Fraction f(matrix[i][j]);
-                f.multiply(solution[j]);
+                f.multiply(current);
                 total.add(f);
+                printf("Adding column %d to total\n", j + 1);
                 continue;
             }
+            printf("Total is %d/%d\n", total.getNum(), total.getDen());
+            bool pivot = true;
             for (int k = j - 1; k >= 0; k--) {
                 if (!matrix[i][k].equals(0)) {
                     pivot = false;
                     break;
                 }
             }
+            pivot ? printf("Column %d is a pivot so...\n", j + 1) : printf("Column %d is NOT a pivot so...\n", j + 1);
             if (!pivot) {
                 Fraction f(matrix[i][j]);
                 if (total.equals(0)) {
-                    solution[j] = Fraction(f.getDen(), 1);
+                    printf("Column %d set to %d because it is FREE\n", j + 1, f.getDen());
+                    solution.setValue(Fraction(f.getDen(), 1), j);
                     total.add(Fraction(f.getNum(), 1));
                 } else {
                     total.multiply(Fraction(f.getDen(), f.getNum()));
-                    solution[j] = Fraction(total);
+                    solution.setValue(Fraction(total.getNum(), 1), j);
                     if (!fixed) {
                         int den = total.getDen();
                         if (den != 1) {
                             for (int k = j; k < cols - 1; k++) {
-                                solution[k].multiply(Fraction(den, 1));
+                                Fraction f = solution.getValue(k);
+                                f.multiply(Fraction(den, 1));
+                                solution.setValue(f, k);
                             }
                         }
                     }
+                    printf("Column %d coefficient set to %d/%d\n", j + 1, solution.getValue(j).getNum(), solution.getValue(j).getDen());
                 } 
             } else {
                 Fraction f(matrix[i][j]);
                 if (total.equals(0)) {
                     if (f.equals(0)) break;
-                    solution[j] = Fraction(0, 1);
+                    printf("Column %d coefficient MUST BE 0\n", j + 1);
+                    solution.setValue(Fraction(0, 1), j);
                 } else if (f.equals(0)) {
-                    return NULL;
+                    printf("Returning UNSOLVED solution\n");
+                    solution.setStatus(UNSOLVED);
+                    return solution;
                 } else {
-                    total.multiply(Fraction(-1 * f.getDen(), f.getNum()));
-                    solution[j] = Fraction(total);
+                    total.multiply(Fraction(-1 * f.getDen(), f.getNum())); // -1 *
+                    printf("Total is %d/%d\n", total.getNum(), total.getDen());
+                    solution.setValue(Fraction(total), j);
                     if (!fixed) {
+                        printf("Resetting denominators\n");
                         int den = total.getDen();
                         if (den != 1) {
                             for (int k = j; k < cols - 1; k++) {
-                                solution[k].multiply(Fraction(den, 1));
+                                Fraction f = solution.getValue(k);
+                                f.multiply(Fraction(den, 1));
+                                solution.setValue(f, k);
                             }
                         }
                     }
+                    printf("Column %d coefficient set to %d/%d\n", j + 1, solution.getValue(j).getNum(), solution.getValue(j).getDen());
                 }
                 break;
 
             }
         }
     }
-
+    
+    printf("Returning SOLVED solution\n");
+    solution.setStatus(SOLVED);
     return solution;
 }
 

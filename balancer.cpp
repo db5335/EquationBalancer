@@ -11,6 +11,8 @@
 
 #include "molecule.hpp"
 #include "matrix.hpp"
+#include "solution.hpp"
+#include "equation.hpp"
 
 /// Prints a usage message.
 
@@ -245,21 +247,51 @@ void fillLastColumn(Matrix m, Molecule** molecules, char** atoms, int reactantCo
 /// @param solution the list of integer coefficients
 /// @param size the number of coefficients
 
-void printSolution(Fraction* solution, int size) {
+void printSolution(Fraction* solution, int size, Molecule** molecules, int reactantCount, int productCount) {
     if (solution == NULL) {
         printf("No solution\n");
         return;
     }
-    for (int i = 0; i < size; i++) {
-        int num = solution[i].getNum();
-        int den = solution[i].getDen();
-        if (num % den == 0) {
-            printf("%d\t", num / den);
+
+    int index = 0;
+    
+    for (int i = 0; i < reactantCount; i++) {
+        Molecule reactant = molecules[0][i];
+        if (reactant.getFixed()) {
+            reactant.printMolecule();
         } else {
-            printf("%d/%d\t", num, den);
+            printf("_");
+            int num = solution[index].getNum();
+            int den = solution[index++].getDen();
+            if (num % den == 0) {
+                printf("%d", num / den);
+            } else {
+                printf("%d/%d", num, den);
+            }
+            reactant.printMolecule();
         }
+        if (i < reactantCount - 1) printf(" + ");
     }
-    printf("\n");
+
+    printf(" = ");
+
+    for (int i = 0; i < productCount; i++) {
+        Molecule product = molecules[1][i];
+        if (product.getFixed()) {
+            product.printMolecule();
+        } else {
+            printf("_");
+            int num = solution[index].getNum();
+            int den = solution[index++].getDen();
+            if (num % den == 0) {
+                printf("%d", num / den);
+            } else {
+                printf("%d/%d", num, den);
+            }
+            product.printMolecule();
+        }
+        if (i < productCount - 1) printf(" + ");
+    }
 }
 
 /// The main function...
@@ -277,32 +309,21 @@ int main(int argc, char** argv) {
     char string[256];
     fgets(string, sizeof(string), stdin);
  
-    int reactantCount = 0;
-    int productCount = 0;
-    int freeReactantCount = 0;
-    int freeProductCount = 0;
+    Equation equation(string);
+    char** atoms = equation.getAtoms();
 
-    /// create molecules from input
-    Molecule** molecules = parse(string, &reactantCount, &productCount, &freeReactantCount, &freeProductCount);
-    int numAtoms = 0;
-    char** atoms = (char**) malloc(0);
-
-    /// generate a complete list of atoms
-    atoms = addAtoms(atoms, &numAtoms, molecules[0], reactantCount);
-    atoms = addAtoms(atoms, &numAtoms, molecules[1], productCount);
+    Matrix matrix = equation.createMatrixFromEquation();
 
     /// initialize a matrix
-    Matrix matrix(atoms, numAtoms, freeReactantCount + freeProductCount + 1);
-    fillMatrix(matrix, molecules[0], atoms, reactantCount, numAtoms, 0, true);
-    fillMatrix(matrix, molecules[1], atoms, productCount, numAtoms, freeReactantCount, false);
-    fillLastColumn(matrix, molecules, atoms, reactantCount, productCount, numAtoms, freeReactantCount + freeProductCount);
+    ///Matrix matrix(atoms, numAtoms, freeReactantCount + freeProductCount + 1);
+    ///fillMatrix(matrix, molecules[0], atoms, reactantCount, numAtoms, 0, true);
+    ///fillMatrix(matrix, molecules[1], atoms, productCount, numAtoms, freeReactantCount, false);
+    ///fillLastColumn(matrix, molecules, atoms, reactantCount, productCount, numAtoms, freeReactantCount + freeProductCount);
 
     /// balance the equation
-    matrix.printMatrix();
     matrix.reduce();
-    matrix.printMatrix();
-    Fraction* solution = matrix.solve();
-    printSolution(solution, freeReactantCount + freeProductCount);
+    Solution solution = matrix.solve();
+    equation.printSolution(solution);
 
     return 0;
 }
