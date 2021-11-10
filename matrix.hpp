@@ -4,10 +4,11 @@
 ///
 /// @author Dominick Banasik
 
-#include "fraction.hpp"
-
 #ifndef _MATRIX_H_
 #define _MATRIX_H_
+
+#include "fraction.hpp"
+#include "solution.hpp"
 
 /// The Matrix class represents a matrix where
 /// each row corresponds to an atom and each
@@ -75,7 +76,9 @@ class Matrix {
         ///
         /// @return the solution for the matrix
 
-        Fraction* solve();
+        Solution solve();
+
+        /// Prints a representation of the entire matrix.
 
         void printMatrix();
 };

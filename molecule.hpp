@@ -13,6 +13,7 @@
 class Molecule {
     private:
         char** atoms;
+        char* formula;
         int* counts;
         int* multipliers;
         int coefficient;
@@ -72,6 +73,10 @@ class Molecule {
         /// @return the size of the atom list
 
         int getSize();
+
+        /// Prints a string representing the molecule.
+
+        void printMolecule();
 };
 
 #endif

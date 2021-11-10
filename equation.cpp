@@ -1,3 +1,9 @@
+///
+/// file: equation.cpp
+/// Implementation for the Equation class
+///
+/// @author Dominick Banasik
+
 #include <string.h>
 #include <stdio.h>
 
@@ -5,6 +11,9 @@
 
 #ifndef _EQUATION_IMPL_
 #define _EQUATION_IMPL_
+
+/// Fills the last column of a matrix with the fixed number of a certain
+/// atom in the entire equation.
 
 void Equation::fillLastColumn(Matrix matrix) {
     int col = freeReactantCount + freeProductCount;
@@ -36,6 +45,9 @@ void Equation::fillLastColumn(Matrix matrix) {
     }
 }
 
+/// Fills a column of a matrix with the coefficients corresponding
+/// to the number of a certain atom in that molecule.
+
 void Equation::fillMatrix(Matrix matrix, bool isReactant) {
     int mult = isReactant ? 1 : -1;
     int index = isReactant ? 0 : freeReactantCount;
@@ -54,6 +66,8 @@ void Equation::fillMatrix(Matrix matrix, bool isReactant) {
     }
 }
 
+/// Generates a matrix from the chemical equation.
+
 Matrix Equation::createMatrixFromEquation() {
     Matrix matrix(atoms, atomCount, freeReactantCount + freeProductCount + 1);
     fillMatrix(matrix, true);
@@ -61,6 +75,9 @@ Matrix Equation::createMatrixFromEquation() {
     fillLastColumn(matrix);
     return matrix;
 }
+
+/// Updates the list of atoms to inclue all atoms from a group
+/// of molecules.
 
 void Equation::generateAtoms(bool isReactant) {
     int moleculeCount = reactantCount;
@@ -97,9 +114,13 @@ void Equation::generateAtoms(bool isReactant) {
     }
 }
 
+/// Returns a list of all atoms in the equation.
+
 char** Equation::getAtoms() {
     return atoms;
 }
+
+/// Adds a molecule to the list of reactants or products.
 
 void Equation::addMolecule(char* string, int start, int index, bool isReactant) {
     char* moleculeStr = (char*) malloc((index - start + 1) * sizeof(char));
@@ -129,6 +150,9 @@ void Equation::addMolecule(char* string, int start, int index, bool isReactant) 
     if (!molecule.getFixed()) (*freeMoleculeCount)++;
     molecules[(*moleculeCount)++] = molecule;
 }
+
+/// Parses a string that represents the molecules that
+/// make up the equation.
 
 void Equation::parse(char* string) {
     int start = 0;
@@ -184,6 +208,10 @@ void Equation::parse(char* string) {
     }
 }
 
+/// Prints the solution to the equation, or states otherwise
+/// if no solution exists, the equation is balanced, or
+/// the equation is unbalanced.
+
 void Equation::printSolution(Solution solution) {
     if (solution.getStatus() == SOLVED) {
         int index = 0;
@@ -233,6 +261,8 @@ void Equation::printSolution(Solution solution) {
         printf("The equation is unbalanced\n");
     }
 }
+
+/// Constructor for the Equation class.
 
 Equation::Equation(char* string) {
     reactantCapacity = CAPACITY;

@@ -121,9 +121,17 @@ char** Molecule::getAtoms() {
     return atoms;
 }
 
+/// Prints a string representing the molecule.
+
+void Molecule::printMolecule() {
+    printf("%s", formula);
+}
+
 /// Constructor for the Molecule class.
 
 Molecule::Molecule(char* string) {
+    formula = (char*) malloc(64 * sizeof(char));
+    strcpy(formula, string);
     size = 0;
     atoms = (char**) malloc(0);
     counts = (int*) malloc(0);
