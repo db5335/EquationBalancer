@@ -58,8 +58,8 @@ void Matrix::reduce() {
                 Fraction f1 = matrix[pivots][i];
                 for (int k = pivots + 1; k < rows; k++) {
                     Fraction f2(matrix[k][i]);
-                    f2.multiply(Fraction(-1, 1));
-                    f2.multiply(Fraction(f1.getDen(), f1.getNum()));
+                    f2.multiply(-1);
+                    f2.multiply(f1.getReciprocal());
                     addRow(k, pivots, f2);
                 }
                 pivots++;
@@ -72,11 +72,10 @@ void Matrix::reduce() {
         for (int j = 0; j < cols; j++) {
             if (!matrix[i][j].equals(0)) {
                 Fraction f1 = matrix[i][j];
-                Fraction reciprocal(f1.getDen(), f1.getNum());
-                multiplyRow(i, reciprocal);
+                multiplyRow(i, f1.getReciprocal());
                 for (int k = i - 1; k >= 0; k--) {
                     Fraction f2(matrix[k][j]);
-                    f2.multiply(Fraction(-1, 1));
+                    f2.multiply(-1);
                     addRow(k, i, f2);
                 }
                 break;
@@ -123,17 +122,17 @@ Solution Matrix::solve() {
             if (!pivot) {
                 Fraction f(matrix[i][j]);
                 if (total.equals(0)) {
-                    solution.setValue(Fraction(f.getDen(), 1), j);
-                    total.add(Fraction(f.getNum(), 1));
+                    solution.setValue(Fraction(f.getDen()), j);
+                    total.add(Fraction(f.getNum()));
                 } else {
-                    total.multiply(Fraction(f.getDen(), f.getNum()));
-                    solution.setValue(Fraction(total.getNum(), 1), j);
+                    total.multiply(f.getReciprocal());
+                    solution.setValue(Fraction(total.getNum()), j);
                     if (!fixed) {
                         int den = total.getDen();
                         if (den != 1) {
                             for (int k = j; k < cols - 1; k++) {
                                 Fraction f = solution.getValue(k);
-                                f.multiply(Fraction(den, 1));
+                                f.multiply(Fraction(den));
                                 solution.setValue(f, k);
                             }
                         }
@@ -143,19 +142,21 @@ Solution Matrix::solve() {
                 Fraction f(matrix[i][j]);
                 if (total.equals(0)) {
                     if (f.equals(0)) break;
-                    solution.setValue(Fraction(0, 1), j);
+                    solution.setValue(Fraction(0), j);
                 } else if (f.equals(0)) {
                     solution.setStatus(UNSOLVED);
                     return solution;
                 } else {
-                    total.multiply(Fraction(-1 * f.getDen(), f.getNum())); // -1 *
+                    Fraction reciprocal = f.getReciprocal();
+                    reciprocal.multiply(-1);
+                    total.multiply(reciprocal);
                     solution.setValue(Fraction(total), j);
                     if (!fixed) {
                         int den = total.getDen();
                         if (den != 1) {
                             for (int k = j; k < cols - 1; k++) {
                                 Fraction f = solution.getValue(k);
-                                f.multiply(Fraction(den, 1));
+                                f.multiply(Fraction(den));
                                 solution.setValue(f, k);
                             }
                         }
@@ -176,7 +177,7 @@ Solution Matrix::solve() {
 void Matrix::setValue(char* atom, int col, int quantity) {
     for (int i = 0; i < rows; i++) {
         if (!strcmp(atoms[i], atom)) {
-            Fraction f(quantity, 1);
+            Fraction f(quantity);
             matrix[i][col] = f;
             return;
         }

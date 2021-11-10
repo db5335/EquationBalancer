@@ -24,12 +24,24 @@ class Fraction {
 
         Fraction(int num, int den);
         
+        /// Constructor for the Fraction class.
+        ///
+        /// @param val value of the fraction
+
+        Fraction(int val);
+
         /// Copy constructor for the Fraction class.
         ///
         /// @param copy the fraction to copy
 
         Fraction(const Fraction &copy);
         
+        /// Returns the reciprocal of the fraction.
+        ///
+        /// @return the reciprocal
+
+        Fraction getReciprocal();
+
         /// Returns the numerator of the fraction.
         ///
         /// @return the numerator
@@ -47,6 +59,12 @@ class Fraction {
         /// @param other the fraction to multiply by
 
         void multiply(Fraction other);
+        
+        /// Multiplies the fraction by a scalar.
+        ///
+        /// @param scalar the scalar to multiply by
+
+        void multiply(int scalar);
 
         /// Adds another fraction.
         ///

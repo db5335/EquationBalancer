@@ -88,6 +88,13 @@ void Fraction::multiply(Fraction other) {
     simplify();
 }
 
+/// Multiplies the fraction by a scalar.
+
+void Fraction::multiply(int scalar) {
+    numerator = numerator * scalar;
+    simplify();
+}
+
 /// Adds another fraction.
 
 void Fraction::add(Fraction other) {
@@ -106,11 +113,24 @@ bool Fraction::equals(double d) {
     return d == (double) numerator / (double) denominator;
 }
 
+/// Returns the reciprocal of the fraction.
+
+Fraction Fraction::getReciprocal() {
+    return Fraction(denominator, numerator);
+}
+
 /// Copy constructor for the Fraction class.
 
 Fraction::Fraction(const Fraction &copy) {
     numerator = copy.numerator;
     denominator = copy.denominator;
+}
+
+/// Constructor for the Fraction class.
+
+Fraction::Fraction(int val) {
+    numerator = val;
+    denominator = 1;
 }
 
 /// Constructor for the Fraction class.
